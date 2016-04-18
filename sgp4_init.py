@@ -15,13 +15,17 @@ tle_ele = fr.group(tle_data)
 #initialization
 
 ###tle elements###
-n = tle_ele[0]
-i = tle_ele[1]
-e = tle_ele[2]
-bstar = tle_ele[3]
-omega = tle_ele[4]
+epoch = tle_ele[0] #epoch of tle
+n = tle_ele[1]#mean motion
+i = tle_ele[2] #inclination
+node = tle_ele[3] #raan
+e = tle_ele[4] #eccentricity
+omega = tle_ele[5] #perigee
+m = tle_ele[6] #mean anomaly
+bstar = tle_ele[6] #bstar
 ##################
 
+#recomputation/rederivation of semi-major axis and mean motion
 a1 = (con.ke/n)**(con.exp23)
 
 angle = cos(i)
@@ -35,13 +39,13 @@ a2 = a1*(1-(con.exp13*gamma1)-(gamma1*gamma1)-(con.exp13481*gamma1*gamma1*gamma1
 
 gamma0 = con.exp32*(con.k2/(a2*a2))*factor
 
-n01 = tle_ele[0]/(1+gamma0)
+n01 = n/(1+gamma0)
 
 a01 = (con.ke/n01)**con.exp23
 
-perigee = (a01*(1-e)-1)*con.ae
-apogee = (a01*(1+e)-1)*con.ae
-period = (2*pi*1440/1440)/n01
+perigee = (a01*(1-e)-con.ae)*con.xkmper
+apogee = (a01*(1+e)-con.ae)*con.xkmper
+period = (2*pi*con.mday/con.mday)/n01
 semimajoraxis = (con.mu/((n/60)**2))**(con.exp13)
 
 #initialization for secular effects of atmospheric drag
@@ -59,8 +63,8 @@ if perigee < 156:
     if s4 < 20:
         s4 = 20
 
-    q = ((120-s4)*(1/con.ae))**4
-    s4 = s4/(con.ae+1)
+    q = ((120-s4)*(con.ae/con.xkmper))**4
+    s4 = s4/(con.xkmper+con.ae)
 
 else:
     s4 = con.ks
@@ -71,7 +75,7 @@ beta0 = (1-e2)**0.5
 eta = a01*e*tsi
 
 coeff1 = a01*(1+(1.5*eta*eta)+(4*eta*e)+(e*eta*eta*eta))
-coeff2 = 1.5*con.k2*(tsi/(1-(eta*eta)))*(-0.5+(1.5*(angle*angle)))*(8+(24*eta*eta)+(3*eta*eta*eta*eta))
+coeff2 = (1.5)*con.k2*(tsi/(1-(eta*eta)))*(-0.5+(1.5*(angle*angle)))*(8+(24*eta*eta)+(3*eta*eta*eta*eta))
 
 c2 = q*(tsi**4)*n01*((1-(eta*eta))**-3.5)*(coeff1+coeff2)
 
@@ -118,11 +122,11 @@ coeff1 = -3*con.k2*angle/(a01*a01*(beta0**4))
 coeff2 = 1.5*con.k2*con.k2*(4*angle-19*(angle**3))/((a01**4)*(beta0**8))
 coeff3 = 2.5*con.k4*angle*(3-7*(angle*angle))/((a01**4)*(beta0**8))
 
-comega = (coeff1 + coeff2 + coeff3)*n01
+nodedot = (coeff1 + coeff2 + coeff3)*n01
 
 if e > con.ecc_all:
     deltam = -1*con.exp23*q*bstar*(tsi**4)*con.ae/(e*eta)
 else:
     deltam = 0
 
-comegacoeff = -10.5*n01*con.k2*angle*c1/(a01*a01*beta0*beta0)
+nodecoeff = -10.5*n01*con.k2*angle*c1/(a01*a01*beta0*beta0)
