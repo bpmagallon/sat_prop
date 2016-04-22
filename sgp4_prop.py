@@ -1,9 +1,17 @@
 from sgp4_init import epoch, n, i, bstar, omega, m , node, e, a01, n01, mdot, nodedot, omegadot, deltaomega, deltam, nodecoeff, mode, c1, c3, c4, c5, d2, d3, d4
 import constants as con
 from math import sin, cos, fmod, pi, copysign, atan
+import julian_date
 
 #time since tle epoch
+year = 2000+int(epoch[0:2])
+day_sub = ((year - 1901)*1461)/4+365
+day = epoch[3:]
+jd1900 = julian_date.julian(1900, 1, 0, 0)
+sgdp = jd1900 + day_sub + (day-1)
+ep = (year - 1900)*1000+day
 
+jd = 0.0 #date for propagation (year, month, day, time ut)
 tse = (jd - sgdp)*con.mday
 
 
